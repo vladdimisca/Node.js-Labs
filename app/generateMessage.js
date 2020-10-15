@@ -5,7 +5,6 @@ const generateMessage = () => {
 
     return fetch(url)
         .then(res => res.json())
-        .then(body => body)
 }
 
 module.exports = generateMessage;
