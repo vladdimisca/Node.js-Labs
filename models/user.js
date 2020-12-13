@@ -11,12 +11,12 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      models.User.hasOne(models.Profile);
-      models.User.hasMany(models.Post);
+      models.User.hasOne(models.Profile,{ foreignKey: 'userId' });
+      models.User.hasMany(models.Post, { foreignKey: 'userId' });
     }
   };
   User.init({
-    email: DataTypes.STRING,
+    email: { type: DataTypes.STRING,  unique: 'compositeIndex' },
     password: DataTypes.STRING
   }, {
     sequelize,
