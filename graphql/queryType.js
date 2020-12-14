@@ -1,5 +1,6 @@
-const { GraphQLObjectType, GraphQLNonNull, GraphQLInt } = require('graphql');
+const { GraphQLObjectType, GraphQLNonNull, GraphQLInt, GraphQLList } = require('graphql');
 const models = require('../models');
+const postType = require('./types/postType');
 const profileType = require('./types/profileType');
 const userType = require('./types/userType');
 
@@ -27,7 +28,30 @@ const queryType = new GraphQLObjectType({
         resolve: async (_, { userId }) => {
             return await models.Profile.findOne({ where: { userId: userId } });
         }
-    }
+    },
+    getPostsByUser: {
+      type: GraphQLList(postType),
+      args: {
+         userId: {
+             type: GraphQLNonNull(GraphQLInt)
+         }
+      },
+      resolve: async (_, { userId }) => {
+        return await models.Post.findAll({ where: { userId: userId } });
+      }
+    },
+
+    getPostById: {
+      type: postType,
+      args: {
+         postId: {
+             type: GraphQLNonNull(GraphQLInt)
+         }
+      },
+      resolve: async (_, { postId }) => {
+        return await models.Post.findByPk(postId);
+      }
+    },
   }
 });
 
