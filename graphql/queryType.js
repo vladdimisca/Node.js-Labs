@@ -1,7 +1,8 @@
 const { GraphQLObjectType, GraphQLNonNull, GraphQLInt, GraphQLList } = require('graphql');
 const models = require('../models');
+
+// types
 const postType = require('./types/postType');
-const profileType = require('./types/profileType');
 const userType = require('./types/userType');
 
 const queryType = new GraphQLObjectType({
@@ -18,40 +19,45 @@ const queryType = new GraphQLObjectType({
         return await models.User.findByPk(userId);
       }
     },
-    profile: {
-        type: profileType,
-        args: {
-           userId: {
-               type: GraphQLNonNull(GraphQLInt)
-           }
-        },
-        resolve: async (_, { userId }) => {
-            return await models.Profile.findOne({ where: { userId: userId } });
-        }
-    },
-    getPostsByUser: {
+    post: {
       type: GraphQLList(postType),
       args: {
-         userId: {
-             type: GraphQLNonNull(GraphQLInt)
-         }
+        userId: {
+          type: GraphQLNonNull(GraphQLInt),
+        },
+        postId: {
+          type: GraphQLInt,
+        }
       },
-      resolve: async (_, { userId }) => {
-        return await models.Post.findAll({ where: { userId: userId } });
+      resolve: async (_, { userId, postId }) => {
+        if (!postId) {
+          return await models.Post.findAll({ where: { userId }})
+        }
+        return [await models.Post.findByPk(postId)];
       }
     },
-
-    getPostById: {
-      type: postType,
-      args: {
-         postId: {
-             type: GraphQLNonNull(GraphQLInt)
-         }
-      },
-      resolve: async (_, { postId }) => {
-        return await models.Post.findByPk(postId);
-      }
-    },
+    // getPostsByUser: {
+    //   type: GraphQLList(postType),
+    //   args: {
+    //      userId: {
+    //          type: GraphQLNonNull(GraphQLInt)
+    //      }
+    //   },
+    //   resolve: async (_, { userId }) => {
+    //     return await models.Post.findAll({ where: { userId } });
+    //   }
+    // },
+    // getPostById: {
+    //   type: postType,
+    //   args: {
+    //      postId: {
+    //          type: GraphQLNonNull(GraphQLInt)
+    //      }
+    //   },
+    //   resolve: async (_, { postId }) => {
+    //     return await models.Post.findByPk(postId);
+    //   }
+    // },
   }
 });
 

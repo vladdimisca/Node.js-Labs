@@ -9,7 +9,7 @@ const schema = require('./graphql');
 // middlewares
 const authenticationMiddleware = require('./middleware/authenticationMiddleware');
 
-app.use('/graphql', graphqlHTTP({
+app.use('/graphql', authenticationMiddleware, graphqlHTTP({
     schema
 }));
 

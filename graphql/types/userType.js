@@ -9,7 +9,7 @@ const userType = new GraphQLObjectType({
     email: { type: GraphQLString },
     profile: { 
       type: profileType,
-      resolve: async (parent, { userId }) => {
+      resolve: async (parent) => {
         return await parent.getProfile(); 
       }
     },
