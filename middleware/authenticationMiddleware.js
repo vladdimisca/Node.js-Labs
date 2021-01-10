@@ -11,8 +11,10 @@ const authenticationMiddleware = (req, res, next) => {
       next();
     } else {
       const user = await models.User.findByPk(parseInt(data.userId));
-     
-      req.user = user;
+      if (user) {
+        req.user = user;
+      }
+
       next();
     }
   });

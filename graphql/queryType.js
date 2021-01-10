@@ -24,59 +24,66 @@ const queryType = new GraphQLObjectType({
       type: GraphQLList(postType),
       args: {
         userId: {
-          type: GraphQLNonNull(GraphQLInt),
+          type: GraphQLInt,
         },
         postId: {
           type: GraphQLInt,
         }
       },
       resolve: async (_, { userId, postId }) => {
-        if (!postId) {
-          return await models.Post.findAll({ where: { userId }})
+        if (userId) {
+          const user = await models.User.findByPk(userId);
+          if (!user) {
+            throw "User not found!";
+          } 
+          if (!postId) {
+            return await user.getPosts();
+          }
+          const posts = await user.getPosts({ where: { id: postId } });
+          if (posts.length == 0) {
+            throw "This post doesn't exist or doesn't belong to this user";
+          }
+          return posts;
         }
-        return [await models.Post.findByPk(postId)];
+        const post = await models.Post.findByPk(postId);
+        if (!post) {
+          throw "Post id is missing or the post does not exist";
+        }
+        return [post];
       }
     },
     comment: {
       type: GraphQLList(commentType),
       args: {
         postId: {
-          type: GraphQLNonNull(GraphQLInt),
+          type: GraphQLInt,
         },
         commentId: {
           type: GraphQLInt,
         }
       },
       resolve: async (_, { postId, commentId }) => {
-        if (!commentId) {
-          return await models.Comment.findAll({ where: { postId }})
+        if (postId) {
+          const post = await models.Post.findByPk(postId);
+          if (!post) {
+            throw "Post not found!";
+          } 
+          if (!commentId) {
+            return await post.getComments();
+          }
+          const comments = await post.getComments({ where: { id: commentId } });
+          if (comments.length == 0) {
+            throw "This comment doesn't exist or doesn't belong to this post";
+          }
+          return comments;
         }
-         
-        return [await models.Comment.findByPk(commentId)];
+        const comment = await models.Comment.findByPk(commentId);
+        if (!comment) {
+          throw "Comment not found";
+        }
+        return [comment];
       }
-    },
-    // getPostsByUser: {
-    //   type: GraphQLList(postType),
-    //   args: {
-    //      userId: {
-    //          type: GraphQLNonNull(GraphQLInt)
-    //      }
-    //   },
-    //   resolve: async (_, { userId }) => {
-    //     return await models.Post.findAll({ where: { userId } });
-    //   }
-    // },
-    // getPostById: {
-    //   type: postType,
-    //   args: {
-    //      postId: {
-    //          type: GraphQLNonNull(GraphQLInt)
-    //      }
-    //   },
-    //   resolve: async (_, { postId }) => {
-    //     return await models.Post.findByPk(postId);
-    //   }
-    // },
+    }
   }
 });
 

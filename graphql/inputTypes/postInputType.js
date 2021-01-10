@@ -1,10 +1,10 @@
-const { GraphQLInputObjectType, GraphQLString } = require('graphql');
+const { GraphQLInputObjectType, GraphQLString, GraphQLNonNull } = require('graphql');
 
 const postInputType = new GraphQLInputObjectType({
   name: 'PostInput',
   fields: {
-    title: { type: GraphQLString },
-    body: { type: GraphQLString },
+    title: { type: GraphQLNonNull(GraphQLString) },
+    body: { type: GraphQLNonNull(GraphQLString) },
   }
 });
 
