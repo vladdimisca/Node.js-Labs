@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 // types
 const userType = require('./types/userType');
 const postType = require('./types/postType');
+const commentType = require('./types/commentType');
 
 // input types
 const postInputType = require('./inputTypes/postInputType');
@@ -45,6 +46,7 @@ const mutationType = new GraphQLObjectType({
         return user;
       },
     },
+    
     login: {
       type: GraphQLString,
       args: {
@@ -69,6 +71,7 @@ const mutationType = new GraphQLObjectType({
         return null;
       },
     },
+
     createPost: {
       type: postType,
       args: {
@@ -84,7 +87,28 @@ const mutationType = new GraphQLObjectType({
 
         return await user.createPost(postInput);
       }
-    }
+    },
+    
+    createComment: {
+      type: commentType,
+      args: {
+        postId: { 
+          type: GraphQLNonNull(GraphQLInt)
+        },
+        body: {
+          type: GraphQLNonNull(GraphQLString),
+        },
+      },
+      resolve: async (_, { postId, body }, context) => { 
+        const { user } = context;
+        if (!user) {
+          return null;
+        }
+        userId = user.id;
+        const comment = await models.Comment.create({ postId, userId, body });
+        return comment;
+      }
+    },
   },
 });
 
