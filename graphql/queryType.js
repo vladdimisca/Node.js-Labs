@@ -20,6 +20,7 @@ const queryType = new GraphQLObjectType({
         return await models.User.findByPk(userId);
       }
     },
+
     post: {
       type: GraphQLList(postType),
       args: {
@@ -30,6 +31,7 @@ const queryType = new GraphQLObjectType({
           type: GraphQLInt,
         }
       },
+
       resolve: async (_, { userId, postId }) => {
         if (userId) {
           const user = await models.User.findByPk(userId);
@@ -52,6 +54,7 @@ const queryType = new GraphQLObjectType({
         return [post];
       }
     },
+
     comment: {
       type: GraphQLList(commentType),
       args: {
@@ -82,6 +85,68 @@ const queryType = new GraphQLObjectType({
           throw "Comment not found";
         }
         return [comment];
+      }
+    },
+
+    // returneaza lista persoanelor urmarite de userul dat ca parametru
+    follower: {
+      type: GraphQLList(userType),
+      args: {
+        userId: {
+          type: GraphQLNonNull(GraphQLInt),
+        }
+      },
+      resolve: async (_, { userId }) => {
+       
+        const user = await models.User.findByPk(userId);
+        if (!user) {
+          throw "User not found!";
+        } 
+       
+        const followerFollowed = await models.FollowerFollowed.findAll({ where:{ followerId: user.id } });
+        const users = [];
+        
+        for (let userFollowing of followerFollowed) {
+            users.push(await models.User.findByPk(userFollowing.followedId))
+        }
+
+        if (users.length == 0) {
+          throw "This user doesn't have any people to follow!";
+        }
+        
+        return users;
+        
+      }
+    },
+
+    // returneaza lista persoanelor care urmaresc userul dat ca parametru
+    followed: {
+      type: GraphQLList(userType),
+      args: {
+        userId: {
+          type: GraphQLNonNull(GraphQLInt),
+        }
+      },
+      resolve: async (_, { userId }) => {
+       
+        const user = await models.User.findByPk(userId);
+        if (!user) {
+          throw "User not found!";
+        } 
+
+        const followerFollowed = await models.FollowerFollowed.findAll({ where:{ followedId: user.id } });
+        const users = [];
+        
+        for (let userFollowing of followerFollowed) {
+            users.push(await models.User.findByPk(userFollowing.followerId))
+        }
+
+        if (users.length == 0) {
+          throw "This user is not followed by anyone!";
+        }
+        
+        return users;
+        
       }
     }
   }

@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const userType = require('./types/userType');
 const postType = require('./types/postType');
 const commentType = require('./types/commentType');
+const followerFollowedType = require('./types/followerFollowedType'); 
 
 // input types
 const postInputType = require('./inputTypes/postInputType');
@@ -177,6 +178,15 @@ const mutationType = new GraphQLObjectType({
           throw "Couldn't extract the user from authorization token";
         }
         let post = await models.Post.findByPk(postId);
+
+        if (!post) {
+          throw "Post not found!";
+        }
+
+        if(!await user.hasPost(post)) {
+          throw "This post belongs to another user!";
+        }
+
         await post.destroy();
         return "Post was deleted!";
       },
@@ -203,6 +213,122 @@ const mutationType = new GraphQLObjectType({
         return await user.createComment({ postId, body });
       }
     },
+    
+    updateComment: {
+      type: commentType,
+      args: {
+        commentId: {
+          type: GraphQLNonNull(GraphQLInt)
+        },
+        body: {
+          type: GraphQLNonNull(GraphQLString),
+        },
+      },
+      resolve: async (_, { commentId, body}, context) => { 
+        const { user } = context;
+        if (!user) {
+          throw "Couldn't extract the user from authorization token";
+        }
+     
+        let comment = await models.Comment.findByPk(commentId); 
+
+        if (!comment) {
+          throw "Comment not found!";
+        }
+
+        if(!await user.hasComment(comment)) {
+          throw "This comment belongs to another user!";
+        }
+
+        comment.body = body;
+        await comment.save();
+        return comment;
+      }
+    },
+
+    deleteComment: {
+      type: GraphQLString,
+      args: {
+        commentId: {
+          type: GraphQLNonNull(GraphQLInt)
+        }
+      },
+      resolve: async (_, { commentId }, context) => {
+        const { user } = context;
+        if (!user) {
+          throw "Couldn't extract the user from authorization token";
+        }
+
+        let comment = await models.Comment.findByPk(commentId); 
+        if (!comment) {
+          throw "Comment not found!";
+        }
+
+        if(!await user.hasComment(comment)) {
+          throw "This comment belongs to another user!";
+        }
+
+        await comment.destroy();
+        return "Comment was deleted!";
+      },
+    },
+
+    createFollow: {
+      type: followerFollowedType,
+      args: {
+        userId: {
+          type: GraphQLNonNull(GraphQLInt)
+        }
+      },
+      resolve: async (_, { userId }, context) => {
+        const { user } = context;
+        if (!user) {
+          throw "Couldn't extract the user from authorization token";
+        }
+
+        let userToBeFollowed = await models.User.findByPk(userId); 
+        if (!userToBeFollowed) {
+          throw "User not found!";
+        }
+        
+        if (await userToBeFollowed.hasFollowed(user)) {
+          throw "User already followed!";
+        }
+
+        await userToBeFollowed.addFollowed(user);
+        return await models.FollowerFollowed.findOne({ where: { followedId: userToBeFollowed.id, followerId: user.id } })
+      },
+    },
+    
+    deleteFollow: {
+      type: GraphQLString,
+      args: {
+        userId: {
+          type: GraphQLNonNull(GraphQLInt)
+        }
+      },
+      resolve: async (_, { userId }, context) => {
+        const { user } = context;
+        if (!user) {
+          throw "Couldn't extract the user from authorization token";
+        }
+
+        const userToBeUnfollowed = await models.User.findByPk(userId); 
+        if (!userToBeUnfollowed) {
+          throw "User not found!";
+        }
+
+        const followerFollowed = await models.FollowerFollowed.findOne({ where: { followedId: userToBeUnfollowed.id, followerId: user.id } })
+        
+        if (!followerFollowed) {
+          throw "User was not followed!";
+        }
+        
+        await followerFollowed.destroy();
+        return "Follow was deleted!";
+      },
+    },
+
   },
 });
 
