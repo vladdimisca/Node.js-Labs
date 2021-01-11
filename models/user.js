@@ -14,8 +14,8 @@ module.exports = (sequelize, DataTypes) => {
       models.User.hasOne(models.Profile, { foreignKey: 'userId', onDelete: 'cascade', hooks: true });
       models.User.hasMany(models.Post, { foreignKey: 'userId', onDelete: 'cascade', hooks: true  });
       models.User.hasMany(models.Comment, { foreignKey: 'userId', onDelete: 'cascade', hooks: true });
-      models.User.belongsToMany(models.User, {as: "Follower", foreignKey: "followerId", through: 'FollowerFollowed' });
-      models.User.belongsToMany(models.User, {as: "Followed", foreignKey: "followedId", through: 'FollowerFollowed' });
+      models.User.belongsToMany(models.User, {as: "Followers", foreignKey: "followerId", through: 'FollowerFollowed' });
+      models.User.belongsToMany(models.User, {as: "Followeds", foreignKey: "followedId", through: 'FollowerFollowed' });
     }
   };
   User.init({

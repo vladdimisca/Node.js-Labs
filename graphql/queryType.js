@@ -97,25 +97,12 @@ const queryType = new GraphQLObjectType({
         }
       },
       resolve: async (_, { userId }) => {
-       
         const user = await models.User.findByPk(userId);
         if (!user) {
           throw "User not found!";
         } 
-       
-        const followerFollowed = await models.FollowerFollowed.findAll({ where:{ followerId: user.id } });
-        const users = [];
-        
-        for (let userFollowing of followerFollowed) {
-            users.push(await models.User.findByPk(userFollowing.followedId))
-        }
 
-        if (users.length == 0) {
-          throw "This user doesn't have any people to follow!";
-        }
-        
-        return users;
-        
+        return await user.getFollowers();
       }
     },
 
@@ -128,25 +115,12 @@ const queryType = new GraphQLObjectType({
         }
       },
       resolve: async (_, { userId }) => {
-       
         const user = await models.User.findByPk(userId);
         if (!user) {
           throw "User not found!";
         } 
 
-        const followerFollowed = await models.FollowerFollowed.findAll({ where:{ followedId: user.id } });
-        const users = [];
-        
-        for (let userFollowing of followerFollowed) {
-            users.push(await models.User.findByPk(userFollowing.followerId))
-        }
-
-        if (users.length == 0) {
-          throw "This user is not followed by anyone!";
-        }
-        
-        return users;
-        
+        return await user.getFolloweds();
       }
     }
   }

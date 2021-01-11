@@ -2,5 +2,9 @@
   "development": {
     "dialect": "sqlite",
     "storage": "storage/db.sqlite"
+  },
+  "test": {
+    "dialect": "sqlite",
+    "storage": "storage/db.sqlite"
   }
 }

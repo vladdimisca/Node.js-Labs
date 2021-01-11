@@ -273,7 +273,7 @@ const mutationType = new GraphQLObjectType({
       },
     },
 
-    createFollow: {
+    follow: {
       type: followerFollowedType,
       args: {
         userId: {
@@ -300,7 +300,7 @@ const mutationType = new GraphQLObjectType({
       },
     },
     
-    deleteFollow: {
+    unfollow: {
       type: GraphQLString,
       args: {
         userId: {
@@ -318,8 +318,7 @@ const mutationType = new GraphQLObjectType({
           throw "User not found!";
         }
 
-        const followerFollowed = await models.FollowerFollowed.findOne({ where: { followedId: userToBeUnfollowed.id, followerId: user.id } })
-        
+        const followerFollowed = await models.FollowerFollowed.findOne({ where: { followedId: userToBeUnfollowed.id, followerId: user.id } });
         if (!followerFollowed) {
           throw "User was not followed!";
         }
