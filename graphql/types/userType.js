@@ -1,6 +1,5 @@
 const { GraphQLObjectType, GraphQLInt, GraphQLString, GraphQLList } = require('graphql');
 const profileType = require('./profileType');
-//const models = require('../../models');
 
 const userType = new GraphQLObjectType({
   name: 'User',
